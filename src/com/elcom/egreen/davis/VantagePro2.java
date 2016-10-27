@@ -29,7 +29,9 @@ public class VantagePro2 extends Thread{
 	public int sample_time = 20000;
 	
 	private final byte ACK = 0x06;
-	public VantageProData vangtage = new VantageProData();
+	public VantageProData vantage = new VantageProData();
+	public boolean have_new_data = false;
+	public int last_next_record = 0;
 	
 	public VantagePro2() {
 		// TODO Auto-generated constructor stub
@@ -109,47 +111,51 @@ public class VantagePro2 extends Thread{
 					data_in_buff_size = serial_in.read(data_in_buff);
 					if (data_in_buff_size == 100) {
 						if (data_in_buff[0] == ACK && data_in_buff[1] == 'L' && data_in_buff[2] == 'O' && data_in_buff[3] == 'O') {	
-							vangtage.next_record = (data_in_buff[7] << 8) + data_in_buff[6];
-							vangtage.barometer = ((data_in_buff[9] << 8) + data_in_buff[8])/1000f;
-							vangtage.inside_temperature = ((data_in_buff[11] << 8) + data_in_buff[10])/10f;
-							vangtage.inside_humidity = data_in_buff[12];
-							vangtage.outside_temperature = ((data_in_buff[14] << 8) + data_in_buff[13])/10f;
-							vangtage.wind_speed = data_in_buff[15];
-							vangtage.avg_wind_speed_10min = data_in_buff[16];
-							vangtage.wind_direction = (data_in_buff[18] << 8) + data_in_buff[17];
-							vangtage.outside_humidity = data_in_buff[34];
-							vangtage.rain_rate = (data_in_buff[43] << 8) + data_in_buff[42];
-							vangtage.day_rain = (data_in_buff[52] << 8) + data_in_buff[51];
-							vangtage.month_rain = (data_in_buff[54] << 8) + data_in_buff[53];
-							vangtage.year_rain = (data_in_buff[56] << 8) + data_in_buff[55];
-							vangtage.rain_alarms = data_in_buff[72];
-							vangtage.outside_alarms = data_in_buff[73];
-							vangtage.forecast_icons = data_in_buff[90];
-							vangtage.time_of_sunrise = (data_in_buff[93] << 8) + data_in_buff[92];
-							vangtage.time_of_sunset = (data_in_buff[95] << 8) + data_in_buff[94];
-							vangtage.solar_radiation = (data_in_buff[46] << 8) + data_in_buff[45];
-							vangtage.uv = data_in_buff[44];
+							vantage.next_record = (data_in_buff[7] << 8) + data_in_buff[6];
+							if (last_next_record != vantage.next_record) {
+								have_new_data = true;
+								last_next_record = vantage.next_record;
+							}
+							vantage.barometer = ((data_in_buff[9] << 8) + data_in_buff[8])/1000f;
+							vantage.inside_temperature = ((data_in_buff[11] << 8) + data_in_buff[10])/10f;
+							vantage.inside_humidity = data_in_buff[12];
+							vantage.outside_temperature = ((data_in_buff[14] << 8) + data_in_buff[13])/10f;
+							vantage.wind_speed = data_in_buff[15];
+							vantage.avg_wind_speed_10min = data_in_buff[16];
+							vantage.wind_direction = (data_in_buff[18] << 8) + data_in_buff[17];
+							vantage.outside_humidity = data_in_buff[34];
+							vantage.rain_rate = (data_in_buff[43] << 8) + data_in_buff[42];
+							vantage.day_rain = (data_in_buff[52] << 8) + data_in_buff[51];
+							vantage.month_rain = (data_in_buff[54] << 8) + data_in_buff[53];
+							vantage.year_rain = (data_in_buff[56] << 8) + data_in_buff[55];
+							vantage.rain_alarms = data_in_buff[72];
+							vantage.outside_alarms = data_in_buff[73];
+							vantage.forecast_icons = data_in_buff[90];
+							vantage.time_of_sunrise = (data_in_buff[93] << 8) + data_in_buff[92];
+							vantage.time_of_sunset = (data_in_buff[95] << 8) + data_in_buff[94];
+							vantage.solar_radiation = (data_in_buff[46] << 8) + data_in_buff[45];
+							vantage.uv = data_in_buff[44];
 
-							logger.debug("----------- next_record: " + vangtage.next_record + " -----------");
-							logger.debug("barometer: " + vangtage.barometer + " Hg");
-							logger.debug("inside_temperature: " + vangtage.inside_temperature + " F");
-							logger.debug("inside_humidity: " + vangtage.inside_humidity + " %");
-							logger.debug("outside_temperature: " + vangtage.outside_temperature + " F");
-							logger.debug("wind_speed: " + vangtage.wind_speed + " mph");
-							logger.debug("avg_wind_speed_10min: " + vangtage.avg_wind_speed_10min + " mph");
-							logger.debug("wind_direction: " + vangtage.wind_direction + " degrees");
-							logger.debug("outside_humidity: " + vangtage.outside_humidity + " %");
-							logger.debug("solar_radiation: " + vangtage.solar_radiation + " watt/meter2");
-							logger.debug("uv: " + vangtage.uv + " index");
-							logger.debug("rain_rate: " + vangtage.rain_rate + " clicks");
-							logger.debug("day_rain: " + vangtage.day_rain + " clicks");
-							logger.debug("month_rain: " + vangtage.month_rain + " clicks");
-							logger.debug("year_rain: " + vangtage.year_rain + " clicks");
-							logger.debug("rain_alarms: " + vangtage.rain_alarms);
-							logger.debug("outside_alarms: " + vangtage.outside_alarms);
-							logger.debug("forecast_icons: " + vangtage.forecast_icons);
-							logger.debug("time_of_sunrise: " + vangtage.time_of_sunrise/100 + ":" + vangtage.time_of_sunrise%100);
-							logger.debug("time_of_sunset: " + vangtage.time_of_sunset/100 + ":" + vangtage.time_of_sunset%100);
+							logger.debug("----------- next_record: " + vantage.next_record + " -----------");
+							logger.debug("barometer: " + vantage.barometer + " Hg");
+							logger.debug("inside_temperature: " + vantage.inside_temperature + " F");
+							logger.debug("inside_humidity: " + vantage.inside_humidity + " %");
+							logger.debug("outside_temperature: " + vantage.outside_temperature + " F");
+							logger.debug("wind_speed: " + vantage.wind_speed + " mph");
+							logger.debug("avg_wind_speed_10min: " + vantage.avg_wind_speed_10min + " mph");
+							logger.debug("wind_direction: " + vantage.wind_direction + " degrees");
+							logger.debug("outside_humidity: " + vantage.outside_humidity + " %");
+							logger.debug("solar_radiation: " + vantage.solar_radiation + " watt/meter2");
+							logger.debug("uv: " + vantage.uv + " index");
+							logger.debug("rain_rate: " + vantage.rain_rate + " clicks");
+							logger.debug("day_rain: " + vantage.day_rain + " clicks");
+							logger.debug("month_rain: " + vantage.month_rain + " clicks");
+							logger.debug("year_rain: " + vantage.year_rain + " clicks");
+							logger.debug("rain_alarms: " + vantage.rain_alarms);
+							logger.debug("outside_alarms: " + vantage.outside_alarms);
+							logger.debug("forecast_icons: " + vantage.forecast_icons);
+							logger.debug("time_of_sunrise: " + vantage.time_of_sunrise/100 + ":" + vantage.time_of_sunrise%100);
+							logger.debug("time_of_sunset: " + vantage.time_of_sunset/100 + ":" + vantage.time_of_sunset%100);
 							Thread.sleep(sample_time);
 						}
 					}

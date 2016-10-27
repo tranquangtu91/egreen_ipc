@@ -10,8 +10,9 @@ import com.elcom.egreen.utils.DBUtils;
 import com.elcom.egreen.conn.ConnectionUtils;
 import com.elcom.egreen.davis.*;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -21,14 +22,14 @@ import java.sql.SQLException;
  */
 public class MainApplication {
     
-    static Logger log = Logger.getLogger(MainApplication.class.getName());
+    static Logger logger = Logger.getLogger(MainApplication.class.getName());
     
     public static PLC block1;
     public static VantagePro2 weather_link;
     public static Connection conn;
     
     public static void main(String[] args) throws InterruptedException {
-        BasicConfigurator.configure();
+        PropertyConfigurator.configure("log4j.properties");
         
         weather_link = new VantagePro2("COM3", 19200);
         weather_link.start();
@@ -39,14 +40,22 @@ public class MainApplication {
         
         try {
 			conn = ConnectionUtils.getConnection();
-			DBUtils.insertForestLog(conn, weather_link.vangtage);
 		} catch (ClassNotFoundException | SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
         
         while (true) {
-        	
+        	if (weather_link.have_new_data) {
+        		weather_link.have_new_data = false;
+    			try {
+					DBUtils.insertForestLog(conn, weather_link.vantage);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					logger.error(e.getMessage());
+				}
+        	}
+        	Thread.sleep(1000);
         }
     }
 }
